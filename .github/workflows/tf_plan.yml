@@ -1,0 +1,56 @@
+### Reusable workflow to plan terraform deployment.
+name: "Build_TF_Plan"
+ 
+on:
+  workflow_call:
+    inputs:
+      path:
+        description: 'Specifies the path of the root terraform module.'
+        required: true
+        type: string
+      tf_vars_file:
+        description: 'Specifies the Terraform TFVARS file.'
+        required: true
+        type: string
+    # secrets:
+
+# permissions:
+#         id-token: write
+#         contents: read 
+jobs:
+  build-plan:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.path }}
+        
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+        
+      - name: Set up Azure login
+        uses: azure/login@v1
+        with:
+           creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
+      - name: Terraform Init
+        id: init
+        run: terraform init
+      
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate
+      
+      - name: Terraform Plan
+        id: plan
+        run: |
+             ls -l
+             az version
+             terraform plan -var-file=${{ inputs.tf_vars_file }} 
+        continue-on-error: true
+
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
