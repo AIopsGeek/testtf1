@@ -1,9 +1,9 @@
 name: "Apply_TF_Plan"
 on: 
-  workflow_dispatch
+  push
 jobs:
   TF_Plan_Dev:
-    uses: ./.github/workflows/tf_plan1.yml
+    uses: ./.github/workflows/tf_plan.yml
     with:
       path: app/
       tf_vars_file: dev.tfvars
